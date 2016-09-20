@@ -52,7 +52,7 @@ class VPLS (NLRI):
 			and self.endpoint == other.endpoint
 
 	def index (self):
-		return self.pack()
+		return NLRI._index(self) + self.pack()
 
 	def assign (self, name, value):
 		setattr(self,name,value)
@@ -83,7 +83,7 @@ class VPLS (NLRI):
 			'"offset": %s' % self.offset,
 			'"size": %s' % self.size,
 		])
-		return '"vpls-%s": { %s }' % (self.unique, content)
+		return '{ %s }' % (content)
 
 	def extensive (self):
 		return "vpls%s endpoint %s base %s offset %s size %s %s" % (

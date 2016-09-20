@@ -445,29 +445,32 @@ for content in dir():
 		continue
 	if not issubclass(kls,IComponent):
 		continue
-	if issubclass(kls,IPv4):
-		_afi = AFI.ipv4
-	elif issubclass(kls,IPv6):
-		_afi = AFI.ipv6
-	else:
-		continue
+
 	_ID = getattr(kls,'ID',None)
 	if not _ID:
 		continue
-	factory[_afi][_ID] = kls
-	name = getattr(kls,'NAME')
 
-	if issubclass(kls, IOperation):
-		if issubclass(kls, BinaryString):
-			decode[_afi][_ID] = 'binary'
-		elif issubclass(kls, NumericString):
-			decode[_afi][_ID] = 'numeric'
+	_afis = []
+	if issubclass(kls,IPv4):
+		_afis.append(AFI.ipv4)
+	if issubclass(kls,IPv6):
+		_afis.append(AFI.ipv6)
+
+	for _afi in _afis:
+		factory[_afi][_ID] = kls
+		name = getattr(kls,'NAME')
+
+		if issubclass(kls, IOperation):
+			if issubclass(kls, BinaryString):
+				decode[_afi][_ID] = 'binary'
+			elif issubclass(kls, NumericString):
+				decode[_afi][_ID] = 'numeric'
+			else:
+				raise RuntimeError('invalid class defined (string)')
+		elif issubclass(kls, IPrefix):
+			decode[_afi][_ID] = 'prefix'
 		else:
-			raise RuntimeError('invalid class defined (string)')
-	elif issubclass(kls, IPrefix):
-		decode[_afi][_ID] = 'prefix'
-	else:
-		raise RuntimeError('unvalid class defined (type)')
+			raise RuntimeError('unvalid class defined (type)')
 
 
 # ..........................................................
@@ -561,7 +564,7 @@ class Flow (NLRI):
 			return "%s%s" % (pack('!H',l | 0xF000),components)
 		raise Notify(3,0,"my administrator attempted to announce a Flow Spec rule larger than encoding allows, protecting the innocent the only way I can")
 
-	def extensive (self):
+	def _rules (self):
 		string = []
 		for index in sorted(self.rules):
 			rules = self.rules[index]
@@ -575,9 +578,12 @@ class Flow (NLRI):
 			if len(s) > 1:
 				line = '[ %s ]' % line
 			string.append(' %s %s' % (rules[0].NAME,line))
+		return ''.join(string)
+
+	def extensive (self):
 		nexthop = ' next-hop %s' % self.nexthop if self.nexthop is not NoNextHop else ''
 		rd = '' if self.rd is RouteDistinguisher.NORD else str(self.rd)
-		return 'flow' + rd + ''.join(string) + nexthop
+		return 'flow' + self._rules() + rd + nexthop
 
 	def __str__ (self):
 		return self.extensive()
@@ -599,7 +605,7 @@ class Flow (NLRI):
 		nexthop = ', "next-hop": "%s"' % self.nexthop if self.nexthop is not NoNextHop else ''
 		rd = '' if self.rd is RouteDistinguisher.NORD else ', %s' % self.rd.json()
 		compatibility = ', "string": "%s"' % self.extensive()
-		return '{' + rd + ','.join(string) + nexthop + compatibility + ' }'
+		return '{' + ','.join(string) + rd + nexthop + compatibility + ' }'
 
 	def json (self):
 		# this is a stop gap so flow route parsing does not crash exabgp
@@ -607,7 +613,7 @@ class Flow (NLRI):
 		return '"flow-%d": %s' % (self.unique,self._json())
 
 	def index (self):
-		return self.pack()
+		return NLRI._index(self) + self.pack()
 
 	@classmethod
 	def unpack_nlri (cls, afi, safi, bgp, action, addpath):
@@ -623,7 +629,7 @@ class Flow (NLRI):
 		over = bgp[length:]
 		bgp = bgp[:length]
 
-		nlri = Flow(afi,safi,action)
+		nlri = cls(afi,safi,action)
 
 		if safi == SAFI.flow_vpn:
 			nlri.rd = RouteDistinguisher(bgp[:8])

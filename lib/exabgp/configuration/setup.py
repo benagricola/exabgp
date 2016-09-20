@@ -64,6 +64,18 @@ environment.configuration = {
 			'value': 'false',
 			'help':  'should we run in the background',
 		},
+		'drop':  {
+			'read':  environment.boolean,
+			'write': environment.lower,
+			'value': 'true',
+			'help':  'drop privileges before forking processes',
+		},
+		'umask':  {
+			'read':  environment.umask_read,
+			'write': environment.umask_write,
+			'value': '0137',
+			'help':  'run daemon with this umask, governs perms of logfiles etc.',
+		},
 	},
 	'log':  {
 		'enable':  {
@@ -224,11 +236,11 @@ environment.configuration = {
 			'value': 'json',
 			'help':  '(experimental) default encoder to use with with external API (text or json)',
 		},
-		'highres':  {
+		'compact':  {
 			'read':  environment.boolean,
 			'write': environment.lower,
-			'value': 'true',
-			'help':  'should we use highres timer in JSON',
+			'value': 'false',
+			'help':  'shorter JSON encoding for IPv4/IPv6 Unicast NLRI',
 		},
 		'respawn':  {
 			'read':  environment.boolean,

@@ -12,6 +12,9 @@ Version 4.0.0
  * Change: when API commands are failing, returns a 'error' message
     patch from: Jérôme Marteaux
  * Change: md5 is now called md5-password
+ * Change: always use neighbor local address for next-hop self (and not router-id for on IPv4 connections)
+ * Feature: support for large communities (-03)
+    patch by: Job Snijders
  * Feature: add support for upstart
     patch by: Pierre-Yves Kerembellec
  * Feature/Fix: Port of bagpipe EVPN code
@@ -30,8 +33,9 @@ Version 4.0.0
   - all deprecated name remove
   - no more process group within neighbor
  * Change: Change the API configuration syntax and format
-  - JSON is now the default API encoder
-  - JSON now use high resolution time by default
+  - default changed
+    * JSON is now the default API encoder
+    * JSON now use high resolution time
   - syntax changes to the Text API format
     * added direction of message
     * change received/sent to receive/send
@@ -44,9 +48,14 @@ Version 4.0.0
     * rename 'address family flags' to be 'address-family-flags'
     * format change for notification and shutdown message
     * VPLS endpoint, base, offset, and size are now numbers and not strings
+    * nlris are now a list and not nrli indexed object
+    * ipv4/ipv6 nlri without label or rd are now a list of nlri (as string) and not key to empty objects
+    * nlris with label or rd are returned as a list of objects
  * Change: remove all ExaBGP 2.0 compatibily environment variables
  * Change: include time when we log to file (and not application)
  * Change: ttl-security is now called outgoing-ttl
+ * Change: the reactor does not exit if there is no peer configured
+    patch by: Jordan Gedney
  * Fix: JSON reporting of VPLS ( endpoint, base, offset, and size were mixed up during printing )
  * Fix: Do shutdown when waiting for a new connection to a peer
  * Fix: Bad ASN enconding when ASN4 is not negotiated
@@ -105,6 +114,14 @@ Version 4.0.0
     reported by: Pavel Odintsov
  * Fix: does not use label information when handling the RIB
     reported by: choisuibun
+ * Fix: healthcheck removes added IPs on exit
+    patch by: Ben Agricola
+ * Fix: Bad encoding of capability when multiple families are used for add-path
+    reported by: Alexander Bespalov
+ * Fix: support non ASN4 use of AS_TRANS (AS23456)
+    reported by: Todd Crane
+ * Fix: the json format would not allow normal parsers to extract all the NLRIs
+    reported by: Marco Marzetti
  * Feature: Allow single line flow route
     requested by: Pavel Odintsov
  * Feature: add support for rpm packaging
@@ -117,6 +134,16 @@ Version 4.0.0
    requested by: Borja Marcos
  * Feature: md5-ip allows to override local-address for the MD5 calculations
    requested by: Bryan Benson
+ * Feature: allow setting process umask via exabgp.daemon.umask
+   patch by: Bryan Le Gear
+ * Change: Update syslog message format
+   patch by: Brian Johnson
+ * Fix: flush route api
+   patch by: Brian Johnson
+ * Feature: Add 'show neighbor status' api
+   patch by: Brian Johnson
+ * Fix: Allow asn4 peer to speak with asn2 only peer
+   patch by: Brian Johnson
 
 Version 3.4.10
  * Fix: Fix parsing attributes with PARTIAL flag set

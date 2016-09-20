@@ -10,9 +10,9 @@ before_install:
   - sudo apt-get install -y python-pip python-dev
 
 install:
-  - pip install coveralls --use-mirrors
-  - pip install psutil --use-mirrors
-  - pip install scrutinizer-ocular --use-mirrors
+  - sudo pip install coveralls
+  - sudo pip install psutil
+  - sudo pip install scrutinizer-ocular
 
 script:
   - export INTERPRETER=python
@@ -46,5 +46,5 @@ notifications:
     on_failure: always
     on_start: false
 
-
-# sudo: false
+sudo: required
+dist: trusty

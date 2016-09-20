@@ -101,7 +101,7 @@ class Update (Message):
 	# XXX: FIXME: calculate size progressively to not have to do it every time
 	# XXX: FIXME: we could as well track when packed_del, packed_mp_del, etc
 	# XXX: FIXME: are emptied and therefore when we can save calculations
-	def messages (self, negotiated):
+	def messages (self, negotiated, include_withdraw=True):
 		# sort the nlris
 
 		add_nlri = []
@@ -114,12 +114,12 @@ class Update (Message):
 				if nlri.afi == AFI.ipv4 and nlri.safi in [SAFI.unicast, SAFI.multicast]:
 					if nlri.action == OUT.ANNOUNCE:
 						add_nlri.append(nlri)
-					else:
+					elif include_withdraw:
 						del_nlri.append(nlri)
 				else:
 					if nlri.action == OUT.ANNOUNCE:
 						add_mp.setdefault(nlri.family(),[]).append(nlri)
-					else:
+					elif include_withdraw:
 						del_mp.setdefault(nlri.family(),[]).append(nlri)
 
 		if not add_nlri and not del_nlri and not add_mp and not del_mp:
@@ -251,6 +251,8 @@ class Update (Message):
 	def unpack_message (cls, data, negotiated):
 		logger = Logger()
 
+		logger.parser(LazyFormat("parsing UPDATE",data))
+
 		length = len(data)
 
 		# This could be speed up massively by changing the order of the IF
@@ -260,12 +262,14 @@ class Update (Message):
 			return EOR.unpack_message(data,negotiated)
 
 		withdrawn, _attributes, announced = cls.split(data)
-		attributes = Attributes.unpack(_attributes,negotiated)
 
 		if not withdrawn:
-			logger.parser("no withdrawn NLRI")
+			logger.parser("withdrawn NLRI none")
+
+		attributes = Attributes.unpack(_attributes,negotiated)
+
 		if not announced:
-			logger.parser("no announced NLRI")
+			logger.parser("announced NLRI none")
 
 		# Is the peer going to send us some Path Information with the route (AddPath)
 		addpath = negotiated.addpath.receive(AFI(AFI.ipv4),SAFI(SAFI.unicast))
@@ -279,14 +283,14 @@ class Update (Message):
 		nlris = []
 		while withdrawn:
 			nlri,left = NLRI.unpack_nlri(AFI.ipv4,SAFI.unicast,withdrawn,IN.WITHDRAWN,addpath)
-			logger.parser(LazyFormat("parsed withdraw nlri %s payload " % nlri,withdrawn[:len(nlri)]))
+			logger.parser("withdrawn NLRI %s" % nlri)
 			withdrawn = left
 			nlris.append(nlri)
 
 		while announced:
 			nlri,left = NLRI.unpack_nlri(AFI.ipv4,SAFI.unicast,announced,IN.ANNOUNCED,addpath)
 			nlri.nexthop = nexthop
-			logger.parser(LazyFormat("parsed announce nlri %s payload " % nlri,announced[:len(nlri)]))
+			logger.parser("announced NLRI %s" % nlri)
 			announced = left
 			nlris.append(nlri)
 

@@ -37,10 +37,12 @@ from exabgp.bgp.message.update.attribute import ClusterList
 from exabgp.bgp.message.update.attribute import AIGP
 from exabgp.bgp.message.update.attribute import GenericAttribute
 
-from exabgp.bgp.message.update.attribute.community.community import Community
-from exabgp.bgp.message.update.attribute.community.communities import Communities
-from exabgp.bgp.message.update.attribute.community.extended import ExtendedCommunity
-from exabgp.bgp.message.update.attribute.community.extended import ExtendedCommunities
+from exabgp.bgp.message.update.attribute.community import Community
+from exabgp.bgp.message.update.attribute.community import Communities
+from exabgp.bgp.message.update.attribute.community import LargeCommunity
+from exabgp.bgp.message.update.attribute.community import LargeCommunities
+from exabgp.bgp.message.update.attribute.community import ExtendedCommunity
+from exabgp.bgp.message.update.attribute.community import ExtendedCommunities
 
 from exabgp.bgp.message.update.nlri.qualifier import PathInfo
 
@@ -262,9 +264,6 @@ def aggregator (tokeniser):
 		if tokeniser() != ')':
 			raise ValueError('invalid aggregator')
 
-	# XXX: This could be buggy - check it
-	if local_as.asn4():
-		return Aggregator4(local_as,local_address)
 	return Aggregator(local_as,local_address)
 
 
@@ -334,6 +333,8 @@ def _community (value):
 		# no-peer is not a correct syntax but I am sure someone will make the mistake :)
 		elif low == 'nopeer' or low == 'no-peer':
 			return Community(Community.NO_PEER)
+		elif low == 'blackhole':
+			return Community(Community.BLACKHOLE)
 		elif value.isdigit():
 			number = int(value)
 			if number > Community.MAX:
@@ -357,6 +358,55 @@ def community (tokeniser):
 		communities.add(_community(value))
 
 	return communities
+
+def _large_community (value):
+
+	separator = value.find(':')
+	if separator > 0:
+		prefix, affix, suffix = value.split(':')
+
+		if not any(map(lambda c:c.isdigit(), [prefix, affix, suffix])):
+			raise ValueError('invalid community %s' % value)
+
+		prefix, affix, suffix = map(int, [prefix, affix, suffix])
+
+		for i in [prefix, affix, suffix]:
+			if i > LargeCommunity.MAX:
+				raise ValueError('invalid community %i in %s too large' % (i, value))
+
+		return LargeCommunity(pack('!LLL', prefix, affix, suffix))
+
+	elif value[:2].lower() == '0x':
+		number = int(value)
+		if number > LargeCommunity.MAX:
+			raise ValueError('invalid large community %s (too large)' % value)
+		return LargeCommunity(pack('!LLL', number >> 64, (number >> 32) & 0xFFFFFFFF, number & 0xFFFFFFFF))
+
+	else:
+		low = value.lower()
+		if value.isdigit():
+			number = int(value)
+			if number > LargeCommunity.MAX:
+				raise ValueError('invalid large community %s (too large)' % value)
+			return LargeCommunity(pack('!LLL', number >> 64, (number >> 32) & 0xFFFFFFFF, number & 0xFFFFFFFF))
+		else:
+			raise ValueError('invalid large community name %s' % value)
+
+
+def large_community (tokeniser):
+	large_communities = LargeCommunities()
+
+	value = tokeniser()
+	if value == '[':
+		while True:
+			value = tokeniser()
+			if value == ']':
+				break
+			large_communities.add(_large_community(value))
+	else:
+		large_communities.add(_large_community(value))
+
+	return large_communities
 
 
 _HEADER = {

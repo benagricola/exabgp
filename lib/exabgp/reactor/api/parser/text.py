@@ -71,35 +71,42 @@ class Text (object):
 
 		return returned,command
 
-	def api_route (self, command, peers):
+	def api_route (self, command):
 		action, line = command.split(' ',1)
 
 		self.configuration.static.clear()
 		if not self.configuration.partial('static',line):
 			return []
 
-		changes = self.configuration.scope.pop('routes',[])
-		return zip([peers]*len(changes),changes)
-
-	def api_flow (self, command, peers):
-		action, flow, line = command.split(' ',2)
-
-		self.configuration.static.clear()
-		if not self.configuration.partial('flow',line):
+		if self.configuration.scope.location():
 			return []
 
 		changes = self.configuration.scope.pop('routes',[])
-		return zip([peers]*len(changes),changes)
+		return changes
 
-	def api_vpls (self, command, peers):
+	def api_flow (self, command):
+		action, flow, line = command.split(' ',2)
+
+		self.configuration.flow.clear()
+		if not self.configuration.partial('flow',line):
+			return []
+
+		if self.configuration.scope.location():
+			return []
+
+		self.configuration.scope.to_context('route')
+		changes = self.configuration.scope.pop('routes',[])
+		return changes
+
+	def api_vpls (self, command):
 		action, line = command.split(' ',1)
 
-		self.configuration.static.clear()
+		self.configuration.vpls.clear()
 		if not self.configuration.partial('l2vpn',line):
 			return []
 
 		changes = self.configuration.scope.pop('routes',[])
-		return zip([peers]*len(changes),changes)
+		return changes
 
 	def api_attributes (self, command, peers):
 		action, line = command.split(' ',1)
@@ -109,7 +116,7 @@ class Text (object):
 			return []
 
 		changes = self.configuration.scope.pop('routes',[])
-		return zip([peers]*len(changes),changes)
+		return changes
 
 	def api_refresh (self, command):
 		tokens = formated(command).split(' ')[2:]

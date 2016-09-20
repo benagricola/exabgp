@@ -16,15 +16,19 @@ from exabgp.reactor.api.options import hexstring
 from exabgp.bgp.message import Message
 from exabgp.bgp.message import IN
 
+from exabgp.configuration.environment import environment
+
+
 def nop (_): return _
 
 
 class JSON (object):
 	_count = {}
 
-	def __init__ (self, version, highres=False):
+	def __init__ (self, version):
 		self.version = version
-		self.time = nop if highres else int
+		self.time = nop
+		self.compact = environment.settings().api.compact
 
 	# def _reset (self, neighbor):
 	# 	self._count[neighbor.uid] = 0
@@ -107,9 +111,11 @@ class JSON (object):
 		})),'','',neighbor,message_type='state')
 
 	def down (self, neighbor, reason=''):
+		def escape_quote (reason):
+			return reason.replace('"','\\"')
 		return self._header(self._neighbor(neighbor,None,self._kv({
 			'state':  'down',
-			'reason': reason,
+			'reason': escape_quote(reason),
 		})),'','',neighbor,message_type='state')
 
 	def shutdown (self):
@@ -168,9 +174,9 @@ class JSON (object):
 			m = ''
 			for nexthop in plus[family]:
 				nlris = plus[family][nexthop]
-				m += '"%s": { ' % nexthop
-				m += ', '.join('%s' % nlri.json() for nlri in nlris)
-				m += ' }, '
+				m += '"%s": [ ' % nexthop
+				m += ', '.join('%s' % nlri.json(compact=self.compact) for nlri in nlris)
+				m += ' ], '
 			s += m[:-2]
 			s += ' }'
 			add.append(s)
@@ -178,16 +184,15 @@ class JSON (object):
 		remove = []
 		for family in minus:
 			nlris = minus[family]
-			s  = '"%s %s": { ' % family
-			s += ', '.join('%s' % nlri.json() for nlri in nlris)
-			s += ' }'
+			s  = '"%s %s": [ ' % family
+			s += ', '.join('%s' % nlri.json(compact=self.compact) for nlri in nlris)
+			s += ' ]'
 			remove.append(s)
 
 		nlri = ''
-		if not add and not remove:  # an EOR
-			if not update.nlris:
-				raise ValueError('no NLRIS in the update')
-			return update.nlris[0].json()
+		if not add and not remove:
+			if update.nlris:  # an EOR
+				return update.nlris[0].json()
 		if add:
 			nlri += '"announce": { %s }' % ', '.join(add)
 		if add and remove:

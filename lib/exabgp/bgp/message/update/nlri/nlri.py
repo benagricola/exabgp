@@ -32,8 +32,11 @@ class NLRI (Family):
 	def assign (self, name, value):
 		setattr(self,name,value)
 
+	def _index (self):
+		return '%s%s' % (self.afi,self.safi)
+
 	def index (self):
-		return '%s%s%s' % (self.afi,self.safi,self.pack())
+		raise NotImplementedError('NLRI index not implemented')
 
 	# remove this when code restructure is finished
 	def pack (self, negotiated=None):
@@ -95,7 +98,7 @@ class NLRI (Family):
 	def unpack_nlri (cls, afi, safi, data, action, addpath):
 		if not cls.logger:
 			cls.logger = Logger()
-		cls.logger.parser(LazyNLRI(afi,safi,data))
+		cls.logger.parser(LazyNLRI(afi,safi,addpath,data))
 
 		key = '%s/%s' % (AFI(afi),SAFI(safi))
 		if key in cls.registered_nlri:

@@ -75,11 +75,15 @@ class Attribute (object):
 		TUNNEL_ENCAP       = 0x17  # 23
 		AIGP               = 0x1A  # 26
 
+		# draft-heitz-idr-large-community-03
+		LARGE_COMMUNITY    = 0x29  # 41
+
 		INTERNAL_NAME      = 0xFFFC
 		INTERNAL_WITHDRAW  = 0xFFFD
 		INTERNAL_WATCHDOG  = 0xFFFE
 		INTERNAL_SPLIT     = 0xFFFF
 
+		# Currently formating is done with %-18s
 		names = {
 			ORIGIN:             'origin',
 			AS_PATH:            'as-path',
@@ -89,6 +93,7 @@ class Attribute (object):
 			ATOMIC_AGGREGATE:   'atomic-aggregate',
 			AGGREGATOR:         'aggregator',
 			COMMUNITY:          'community',
+			LARGE_COMMUNITY:    'large-community',
 			ORIGINATOR_ID:      'originator-id',
 			CLUSTER_LIST:       'cluster-list',
 			MP_REACH_NLRI:      'mp-reach-nlri',    # multi-protocol reacheable nlri

@@ -313,6 +313,8 @@ class Configuration (_Configuration):
 		except KeyboardInterrupt:
 			return self.error.set('configuration reload aborted by ^C or SIGINT')
 		except Error, exc:
+			if environment.settings().debug.configuration:
+				raise
 			return self.error.set(
 				'problem parsing configuration file line %d\n'
 				'error message: %s' % (self.tokeniser.index_line, exc)
@@ -376,7 +378,7 @@ class Configuration (_Configuration):
 	def partial (self, section, text):
 		self._cleanup()  # this perform a big cleanup (may be able to be smarter)
 		self._clear()
-		self.tokeniser.set_api(text if text.endswith(';') else text + ' ;')
+		self.tokeniser.set_api(text if text.endswith(';') or text.endswith('}') else text + ' ;')
 
 		if self.section(section) is not True:
 			self._rollback_reload()

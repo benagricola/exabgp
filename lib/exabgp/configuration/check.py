@@ -50,10 +50,6 @@ def check_neighbor (neighbors):
 	logger = Logger()
 	logger._option.parser = True
 
-	if not neighbors:
-		logger.parser('\ncould not find neighbor(s) to check')
-		return False
-
 	logger.parser('\ndecoding routes in configuration')
 
 	for name in neighbors.keys():
@@ -69,8 +65,11 @@ def check_neighbor (neighbors):
 			capa[Capability.CODE.ADD_PATH] = path
 		capa[Capability.CODE.MULTIPROTOCOL] = neighbor.families()
 
-		o1 = Open(Version(4),ASN(neighbor.local_as),HoldTime(180),RouterID(neighbor.local_address.top()),capa)
-		o2 = Open(Version(4),ASN(neighbor.peer_as),HoldTime(180),RouterID(neighbor.peer_address.top()),capa)
+		routerid_1 = str(neighbor.router_id)
+		routerid_2 = '.'.join(str((int(_)+1) % 250) for _ in str(neighbor.router_id).split('.',-1))
+
+		o1 = Open(Version(4),ASN(neighbor.local_as),HoldTime(180),RouterID(routerid_1),capa)
+		o2 = Open(Version(4),ASN(neighbor.peer_as),HoldTime(180),RouterID(routerid_2),capa)
 		negotiated = Negotiated(neighbor)
 		negotiated.sent(o1)
 		negotiated.received(o2)
@@ -112,7 +111,7 @@ def check_neighbor (neighbors):
 					if ':' in str1r:
 						str1r = str1r.replace('next-hop self','next-hop ::1')
 					else:
-						str1r = str1r.replace('next-hop self','next-hop 127.0.0.1')
+						str1r = str1r.replace('next-hop self','next-hop %s' % neighbor.local_address)
 
 				if ' name ' in str1r:
 					parts = str1r.split(' ')

@@ -60,16 +60,23 @@ class INET (NLRI):
 
 	def index (self):
 		addpath = 'no-pi' if self.path_info is PathInfo.NOPATH else self.path_info.pack()
-		return addpath + self.cidr.pack_nlri()
+		return NLRI._index(self) + addpath + self.cidr.pack_nlri()
 
 	def extensive (self):
 		return "%s%s" % (self.prefix(),'' if self.nexthop is NoNextHop else ' next-hop %s' % self.nexthop)
 
-	def _internal (self,announced=True):
+	def _internal (self, announced=True):
 		return [self.path_info.json()]
 
-	def json (self, announced=True):
-		return '"%s": { %s }' % (self.cidr.prefix(),", ".join(self._internal(announced)))
+	# The announced feature is not used by ExaBGP, is it by BAGPIPE ?
+
+	def json (self, announced=True, compact=False):
+		internal = ", ".join([_ for _ in self._internal(announced) if _])
+		if internal:
+			return '{ "nlri": "%s", %s }' % (self.cidr.prefix(),internal)
+		if compact:
+			return '"%s"' % self.cidr.prefix()
+		return '{ "nlri": "%s" }' % (self.cidr.prefix())
 
 	@classmethod
 	def _pathinfo (cls, data, addpath):

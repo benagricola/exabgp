@@ -17,13 +17,16 @@ from distutils.util import get_platform
 
 dryrun = False
 
-json_version = '3.5.0'
-text_version = '3.5.0'
+json_version = '3.9.0'
+text_version = '3.9.0'
 
 version_template = """\
-version = "%s"
+import os
+
+release = "%s"
 json = "%s"
 text = "%s"
+version = os.environ.get('EXABGP_VERSION',release)
 
 # Do not change the first line as it is parsed by scripts
 
@@ -313,7 +316,11 @@ if os_name != 'NetBSD':
 		files_definition.append(('/usr/lib/systemd/system',filesOf('etc/systemd')))
 
 version = imp.load_source('version','lib/exabgp/version.py').version
-description_rst = open('PYPI.rst').read() % {'version': version}
+
+try:
+	description_rst = open('PYPI.rst').read() % {'version': version}
+except IOError:
+	description_rst = 'ExaBGP'
 
 setup(
 	name='exabgp',
@@ -342,6 +349,7 @@ setup(
 		'Operating System :: MacOS :: MacOS X',
 		'Operating System :: Microsoft :: Windows',
 		'Programming Language :: Python',
+		'Programming Language :: Python :: 2.7',
 		'Topic :: Internet',
 	],
 	entry_points={
