@@ -58,7 +58,7 @@ logger = logging.getLogger("healthcheck")
 
 try:
     # Python 3.3+ or backport
-    from ipaddress import ip_address as _ip_address  # pylint: disable=F0401
+    from ipaddress import ip_network as _ip_address  # pylint: disable=F0401
 
     def ip_address(x):
         try:
@@ -66,10 +66,11 @@ try:
         except AttributeError:
             pass
         return _ip_address(x)
+
 except ImportError:
     try:
         # Python 2.6, 2.7, 3.2
-        from ipaddr import IPAddress as ip_address
+        from ipaddr import IPNetwork as ip_address
     except ImportError:
         sys.stderr.write(
             '\n'
@@ -154,7 +155,10 @@ def parse():
                    help="self IP address to use as next hop")
     g.add_argument("--ip", metavar='IP',
                    type=ip_address, dest="ips", action="append",
-                   help="advertise this IP address")
+                   help="advertise this IP address or network (CIDR notation)")
+    g.add_argument("--deaggregate-networks",
+                   dest="deaggregate_networks", action="store_true",
+                   help="Deaggregate Networks specified in --ip")
     g.add_argument("--no-ip-setup",
                    action="store_false", dest="ip_setup",
                    help="don't setup missing IP addresses")
@@ -267,7 +271,7 @@ def loopback_ips(label):
     if sys.platform.startswith("linux"):
         # Use "ip" (ifconfig is not able to see all addresses)
         ipre = re.compile(r"^(?P<index>\d+):\s+(?P<name>\S+)\s+inet6?\s+"
-                          r"(?P<ip>[\da-f.:]+)/(?P<netmask>\d+)\s+.*")
+                          r"(?P<ip>[\da-f.:]+)/(?P<mask>\d+)\s+.*")
         labelre = re.compile(r".*\s+lo:(?P<label>\S+).*")
         cmd = subprocess.Popen("/sbin/ip -o address show dev lo".split(),
                                shell=False, stdout=subprocess.PIPE)
@@ -284,7 +288,12 @@ def loopback_ips(label):
         mo = ipre.match(line)
         if not mo:
             continue
-        ip = ip_address(mo.group("ip"))
+        mask = int(mo.group("mask")) or bin(int(mo.group("netmask"), 16)).count("1")
+        try:
+            ip = ip_address("{0}/{1}".format(mo.group("ip"),
+                                             mask))
+        except ValueError:
+            continue
         if not ip.is_loopback:
             if label:
                 lmo = labelre.match(line)
@@ -298,7 +307,7 @@ def loopback_ips(label):
 def setup_ips(ips, label):
     """Setup missing IP on loopback interface"""
     existing = set(loopback_ips(label))
-    toadd = set(ips) - existing
+    toadd = set([ip_address(ip) for net in ips for ip in net]) - existing
     for ip in toadd:
         logger.debug("Setup loopback IP address %s", ip)
         with open(os.devnull, "w") as fnull:
@@ -324,12 +333,11 @@ def remove_ips(ips, label):
     existing = set(loopback_ips(label))
 
     # Get intersection of IPs (ips setup, and IPs configured by ExaBGP)
-    toremove = set(ips) | existing
+    toremove = set([ip_address(ip) for net in ips for ip in net]) | existing
     for ip in toremove:
         logger.debug("Remove loopback IP address %s", ip)
         with open(os.devnull, "w") as fnull:
-            # We specify the prefix length due to ip addr warnings about wildcard deletion
-            cmd = ["ip", "address", "delete", str(ip) + "/32", "dev", "lo"]
+            cmd = ["ip", "address", "delete", str(ip), "dev", "lo"]
             if label:
                 cmd += ["label", "lo:{0}".format(label)]
             try:
@@ -431,10 +439,10 @@ def loop(options):
                 command = "announce" if target is states.UP else "withdraw"
             else:
                 command = "announce"
-            announce = "route {0}/{1} next-hop {2}".format(
+            announce = "route {0} next-hop {1}".format(
                 str(ip),
-                ip.max_prefixlen,
                 options.next_hop or "self")
+
             if command == "announce":
                 announce = "{0} med {1}".format(announce, metric)
                 if options.community:
@@ -451,8 +459,10 @@ def loop(options):
                         options.as_path)
             logger.debug("exabgp: %s %s", command, announce)
             print("{0} {1}".format(command, announce))
+            # Flush command and wait for confirmation from ExaBGP
+            sys.stdout.flush()
+            sys.stdin.readline()
             metric += options.increase
-        sys.stdout.flush()
 
     def trigger(target):
         """Trigger a state change and execute the appropriate commands"""
@@ -560,6 +570,11 @@ def main():
         if options.ip_setup:
             setup_ips(options.ips, options.label)
         drop_privileges(options.user, options.group)
+
+        # Parse defined networks into a list of IPs for advertisement
+        if options.deaggregate_networks:
+            options.ips = [ip_address(ip) for net in options.ips for ip in net]
+
         options.ips = collections.deque(options.ips)
         options.ips.rotate(-options.start_ip)
         options.ips = list(options.ips)

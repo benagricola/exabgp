@@ -1,7 +1,6 @@
 [![License](https://img.shields.io/pypi/l/exabgp.svg)](https://github.com/Exa-Networks/exabgp/blob/master/COPYRIGHT)
 [![PyPI](https://img.shields.io/pypi/v/exabgp.svg)](https://pypi.python.org/pypi/exabgp)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/exabgp.svg)](https://pypi.python.org/pypi/exabgp)
-[![PyPI Python](https://img.shields.io/pypi/pyversions/exabgp.svg)](https://pypi.python.org/pypi/exabgp)
 [![PyPI Status](https://img.shields.io/pypi/status/exabgp.svg)](https://pypi.python.org/pypi/exabgp)
 [![PyPI Wheel](https://img.shields.io/pypi/wheel/exabgp.svg)](https://pypi.python.org/pypi/exabgp)
 [![Gitter](https://badges.gitter.im/Exa-Networks/exabgp.svg)](https://gitter.im/Exa-Networks/exabgp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -16,9 +15,28 @@ Also, [alone](http://perso.nautile.fr/prez/fgabut-flowspec-frnog-final.pdf) or i
 
 But it is not its only strength, thanks to modern routers' flow balancing, ExaBGP can also be used to save you money on [load balancers](http://bits.shutterstock.com/2014/05/22/stop-buying-load-balancers-and-start-controlling-your-traffic-flow-with-software/). Other uses include keeping an eye on network changes done by [RIPE](https://labs.ripe.net/Members/wouter_miltenburg/researching-next-generation-ris-route-collectors) or by other networks with [GIXLG](https://github.com/dpiekacz/gixlg/wiki/GIXLG-wiki).
 
+## Who is using ExaBGP ?
+
+These organisations have spoken of, or are using/have used ExaBGP:
+[AMS-IX](https://ripe64.ripe.net/presentations/49-Follow_Up_AMS-IX_route-server_test_Euro-IX_20th_RIPE64.pdf),
+[Alcatel Lucent](http://www.nanog.org/sites/default/files/wed.general.trafficdiversion.serodio.10.pdf),
+[BBC](http://www.bbc.co.uk/blogs/internet/entries/8c6c2414-df7a-4ad7-bd2e-dbe481da3633),
+[Blablacar](http://blablatech.com/blog/bgp-routing-to-containers),
+[Cisco Systems](http://www.ciscoknowledgenetwork.com/files/452_06-11-14-20140610_v3_BGP_Optimizing_the_SDN-v1-0.pdf?),
+[CloudFlare](http://www.slideshare.net/TomPaseka/flowspec-apf-2013),
+[Dailymotion](https://github.com/pyke369/exabgp-helpers),
+[Facebook](https://code.facebook.com/posts/1734309626831603/dhcplb-an-open-source-load-balancer/),
+[MaxCDN](http://blog.maxcdn.com/anycast-ip-routing-used-maxcdn/),
+[Microsoft](http://www.nanog.org/sites/default/files/wed.general.brainslug.lapukhov.20.pdf),
+[OpenDNS](https://blog.opendns.com/2013/01/10/high-availability-with-anycast-routing/),
+[PowerDNS](https://blog.powerdns.com/2016/02/23/an-important-update-on-new-powerdns-products/),
+[RIPE NCC](https://labs.ripe.net/Members/wouter_miltenburg/Researchpaper.pdf), ...
+
+Therefore so should [`YOU`](https://en.wikipedia.org/wiki/Bandwagon_effect)! :grin:
+
 ## Installation
 
-The program is packaged for Debian, Ubuntu, ArchLinux, Gentoo, Mint, FreeBSD, OSX and even OmniOS.
+The program is packaged for Debian, Ubuntu, ArchLinux, Gentoo, Mint, FreeBSD, OSX and OmniOS (and probably more).
 
 The latest version is available on [`pypi`](https://pypi.python.org/pypi), the Python Package Index
 
@@ -31,8 +49,8 @@ The latest version is available on [`pypi`](https://pypi.python.org/pypi), the P
 It is also possible to download the latest archive from github
 
 ```sh
-> curl -L https://github.com/Exa-Networks/exabgp/archive/3.4.16.tar.gz | tar zx
-> ./exabgp-3.4.16/sbin/exabgp --help
+> curl -L https://github.com/Exa-Networks/exabgp/archive/3.4.17.tar.gz | tar zx
+> ./exabgp-3.4.17/sbin/exabgp --help
 > ./bin/healthcheck --help
 ```
 
@@ -44,9 +62,9 @@ If using `git`, for production deployment, please use the "3.4` branch.
 > ./bin/healthcheck --help
 ```
 
-Multiple versions can be used simulteanously without conflict when ExaBGP is ran from extracted archives and/or local git repositories.
+Multiple versions can be used simultaneously without conflict when ExaBGP is ran from extracted archives and/or local git repositories.
 
-The configuration file and API format change from time to time, but every effort is made to make sure backward compatibility is kept. However users are encouraged to read the release note/CHANGELOG and check their setup after upgrade.
+The configuration file and API format change from time to time, but every effort is made to make sure backward compatibility is kept. However users are encouraged to read the [release note/CHANGELOG](https://raw.github.com/Exa-Networks/exabgp/master/CHANGELOG) and check their setup after upgrade.
 
 ## Support
 
@@ -55,7 +73,7 @@ The configuration file and API format change from time to time, but every effort
 [![Landscape Code Quality](https://landscape.io/github/Exa-Networks/exabgp/master/landscape.svg)](https://landscape.io/github/Exa-Networks/exabgp/)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Exa-Networks/exabgp/badges/quality-score.png)](https://scrutinizer-ci.com/g/Exa-Networks/exabgp/)
 [![Coverage Status](https://img.shields.io/coveralls/Exa-Networks/exabgp.svg)](https://coveralls.io/r/Exa-Networks/exabgp)
-[![Throughput Graph](https://graphs.waffle.io/Exa-Networks/exabgp/throughput.svg)](https://waffle.io/Exa-Networks/exabgp/metrics/throughput) 
+[![Throughput Graph](https://graphs.waffle.io/Exa-Networks/exabgp/throughput.svg)](https://waffle.io/Exa-Networks/exabgp/metrics/throughput)
 
 <!--
 [![Testing Status](https://travis-ci.org/Exa-Networks/exabgp.svg)](https://travis-ci.org/Exa-Networks/exabgp)
@@ -69,8 +87,16 @@ During "day time" (GMT/BST) feel free to contact us on [`Gitter`](https://gitter
 
 The best way to be kept informed about our progress/releases is to follow us on [Google+](https://plus.google.com/u/0/communities/108249711110699351497) and/or [Twitter](https://twitter.com/#!/search/exabgp). You can also use and subscribe to our low volume [mailing list](http://groups.google.com/group/exabgp-users).
 
-For more information, please consult any of the [wiki pages](https://github.com/Exa-Networks/exabgp/wiki), in particular the [Related Articles](https://github.com/Exa-Networks/exabgp/wiki/Related-articles), [RFC compliance](https://github.com/Exa-Networks/exabgp/wiki/RFC-Information), [FAQ](https://github.com/Exa-Networks/exabgp/wiki/FAQ)
- and [changelog](https://raw.github.com/Exa-Networks/exabgp/master/CHANGELOG).
+## Documentation
+
+The documentation is known to be imperfect. One could even say wanting, limited, insufficient and lacking, therefore any contribution (however small) toward its improvement is truly welcomed.
+
+Other users did however do a fair bit of [`documentation`](https://github.com/Exa-Networks/exabgp/wiki/Related-articles), just not on the [`wiki`](https://github.com/Exa-Networks/exabgp/wiki). :cry:
+
+To understand how ExaBGP should be configured, please have a look into the [`qa/conf`](https://github.com/Exa-Networks/exabgp/tree/master/qa/conf) folder of the repository where a great many examples are available.
+
+`exabgp --help`  is also a treasure trove of information.
+
 
 ## Related Projects
 
@@ -111,6 +137,9 @@ The following projects are related to ExaBGP
   - [super smash brogp](https://github.com/spotify/super-smash-brogp) Stress test BGP
   - [kyro](https://github.com/kvogt/kyro) realtime network performance measurement and optimal routes injection - not really ExaBGP related, they have their own stack, but worth mentioning
 
+**FIB**
+  - [IOS-XR Solenoid](https://github.com/ios-xr/Solenoid) a FIB for ExaBGP
+
 **Other BGP implementation**
   - [Full list](https://github.com/Exa-Networks/exabgp/wiki/Other-OSS-BGP-implementations) of known open source BGP implementation
   - [Bird](http://bird.network.cz/) very good C based BGP implementation with powerful route filtering language for network administrators
@@ -127,26 +156,4 @@ More information can be found [here](https://github.com/Exa-Networks/exabgp/wiki
 
 ExaBGP does **not** perform any FIB manipulation. If this is what you need, you may consider another open source BGP daemon such as [BIRD](http://bird.network.cz/) or [Quagga](http://www.quagga.net/).
 
-## Who is using ExaBGP ?
-
-These organisations have spoken of, or are using/have used ExaBGP:
-
-[AMS-IX](https://ripe64.ripe.net/presentations/49-Follow_Up_AMS-IX_route-server_test_Euro-IX_20th_RIPE64.pdf),
-[Alcatel Lucent](http://www.nanog.org/sites/default/files/wed.general.trafficdiversion.serodio.10.pdf),
-[BBC](http://www.bbc.co.uk/),
-[Cisco Systems](http://www.ciscoknowledgenetwork.com/files/452_06-11-14-20140610_v3_BGP_Optimizing_the_SDN-v1-0.pdf?),
-[CloudFlare](http://www.slideshare.net/TomPaseka/flowspec-apf-2013),
-[Dailymotion](https://twitter.com/fgabut),
-[Deutsche Telekom/TeraStream](https://www.telekom.com),
-[Facebook](http://velocityconf.com/velocity2013/public/schedule/detail/28410),
-[Internap](http://www.internap.com/),
-[MaxCDN](http://blog.maxcdn.com/anycast-ip-routing-used-maxcdn/),
-[Microsoft](http://www.nanog.org/sites/default/files/wed.general.brainslug.lapukhov.20.pdf),
-[Neo Telecom](http://media.frnog.org/FRnOG_18/FRnOG_18-6.pdf),
-[OpenDNS](http://www.opendns.com/),
-[PowerDNS](https://www.powerdns.com/),
-[RIPE NCC](https://labs.ripe.net/Members/wouter_miltenburg/Researchpaper.pdf),
-
-## Self Promotion
-
-Exa Networks has also developed a high-performance and very flexible filtering [HTTP proxy](https://github.com/Exa-Networks/exaproxy) (allowing cookie manipulation and other goodies). Spread the word :wink:
+[RFC compliance](https://github.com/Exa-Networks/exabgp/wiki/RFC-Information) details the latest developments.
