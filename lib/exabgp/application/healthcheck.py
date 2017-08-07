@@ -305,8 +305,12 @@ def setup_ips(ips, label):
             cmd = ["ip", "address", "add", str(ip), "dev", "lo"]
             if label:
                 cmd += ["label", "lo:{0}".format(label)]
-            subprocess.check_call(
-                cmd, stdout=fnull, stderr=fnull)
+            try:
+                subprocess.check_call(
+                    cmd, stdout=fnull, stderr=fnull)
+            except subprocess.CalledProcessError:
+                logger.warn("Unable to add loopback IP address %s - is \
+                    healthcheck running as root?", str(ip))
 
     # If we setup IPs we should also remove them on SIGTERM
     def sigterm_handler(signum, frame): # pylint: disable=W0612,W0613
